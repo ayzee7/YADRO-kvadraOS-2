@@ -2,12 +2,10 @@
 #include <netinet/in.h>
 #include <pwd.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <array>
-#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -192,8 +190,7 @@ std::vector<ProcessInfo> collect_processes(long mem_total_kb,
   std::vector<ProcessInfo> result;
   std::unordered_map<int, long> curr_proc_ticks;
   long hz = sysconf(_SC_CLK_TCK);
-
-  fs::directory_iterator proc_dir("/proc");
+  long n_cpus = sysconf(_SC_NPROCESSORS_ONLN);
 
   for (auto &entry : fs::directory_iterator("/proc")) {
     // We only care about numeric directory names (PIDs)
@@ -224,13 +221,11 @@ std::vector<ProcessInfo> collect_processes(long mem_total_kb,
 
     if (it != g_prev_proc_ticks.end() && delta_total_ticks > 0) {
       long delta_proc = ticks - it->second;
-      long n_cpus = sysconf(_SC_NPROCESSORS_ONLN);
       cpu_pct = 100.0f * delta_proc * n_cpus / delta_total_ticks;
     }
 
     read_proc_status(pid, ps);
-    long rss_kb = ps.rss;
-    float mem_pct = mem_total_kb > 0 ? 100.0f * rss_kb / mem_total_kb : 0.0f;
+    float mem_pct = mem_total_kb > 0 ? 100.0f * ps.rss / mem_total_kb : 0.0f;
 
     ProcessInfo p;
     p.pid = pid;
@@ -350,49 +345,50 @@ std::string http_response(int status, const std::string &content_type,
 
 // Handle one HTTP client connection
 void handle_client(int client_fd) {
-  // Read the request (we only need the first line)
-  std::array<char, 4096> req_buf;
-  ssize_t n = recv(client_fd, req_buf.data(), req_buf.size() - 1, 0);
-  if (n <= 0) {
-    close(client_fd);
-    return;
-  }
-  req_buf[n] = '\0';
-
-  std::string request(req_buf.data());
-  std::string response;
-
-  auto process_request = [&](const std::string &file,
-                             const std::string &content_type) -> void {
-    std::string rd_file = read_file(file);
-    if (rd_file.empty()) {
-      response = http_response(404, "text/plain", file + "not found");
-    } else {
-      response = http_response(200, content_type, rd_file);
+  try {
+    // Read the request (we only need the first line)
+    std::array<char, 4096> req_buf;
+    ssize_t n = recv(client_fd, req_buf.data(), req_buf.size() - 1, 0);
+    if (n <= 0) {
+      close(client_fd);
+      return;
     }
-  };
+    req_buf[n] = '\0';
 
-  if (request.find("GET /api/stats") != std::string::npos) {
-    // Return current metrics as JSON
-    std::lock_guard<std::mutex> lock(g_mutex);
-    std::string body = build_json(g_data);
-    response = http_response(200, "application/json", body);
-  }
-  else if (request.find("GET /style.css") != std::string::npos) {
-    process_request("frontend/style.css", "text/css");
-  }
-  else if (request.find("GET /script.js") != std::string::npos) {
-    process_request("frontend/script.js", "application/javascript");
-  }
-  else if (request.find("GET /") != std::string::npos) {
-    process_request("frontend/index.html", "text/html");
-  }
-  else {
-    response = http_response(404, "text/plain", "Not found");
-  }
+    std::string request(req_buf.data());
+    std::string response;
 
-  send(client_fd, response.data(), response.size(), 0);
-  close(client_fd);
+    auto process_request = [&](const std::string &file,
+                               const std::string &content_type) -> void {
+      std::string rd_file = read_file(file);
+      if (rd_file.empty()) {
+        response = http_response(404, "text/plain", file + " not found");
+      } else {
+        response = http_response(200, content_type, rd_file);
+      }
+    };
+
+    if (request.find("GET /api/stats") != std::string::npos) {
+      // Return current metrics as JSON
+      std::lock_guard<std::mutex> lock(g_mutex);
+      std::string body = build_json(g_data);
+      response = http_response(200, "application/json", body);
+    } else if (request.find("GET /style.css") != std::string::npos) {
+      process_request("frontend/style.css", "text/css");
+    } else if (request.find("GET /script.js") != std::string::npos) {
+      process_request("frontend/script.js", "application/javascript");
+    } else if (request.find("GET /") != std::string::npos) {
+      process_request("frontend/index.html", "text/html");
+    } else {
+      response = http_response(404, "text/plain", "Not found");
+    }
+
+    send(client_fd, response.data(), response.size(), 0);
+    close(client_fd);
+  } catch (const std::exception &e) {
+    std::cerr << "handle_client error: " << e.what() << '\n';
+    close(client_fd);
+  }
 }
 
 // Background thread: refresh metrics every 2 seconds
