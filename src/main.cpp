@@ -362,34 +362,32 @@ void handle_client(int client_fd) {
   std::string request(req_buf.data());
   std::string response;
 
+  auto process_request = [&](const std::string &file,
+                             const std::string &content_type) -> void {
+    std::string rd_file = read_file(file);
+    if (rd_file.empty()) {
+      response = http_response(404, "text/plain", file + "not found");
+    } else {
+      response = http_response(200, content_type, rd_file);
+    }
+  };
+
   if (request.find("GET /api/stats") != std::string::npos) {
     // Return current metrics as JSON
     std::lock_guard<std::mutex> lock(g_mutex);
     std::string body = build_json(g_data);
     response = http_response(200, "application/json", body);
-  } else if (request.find("GET /style.css") != std::string::npos) {
-    std::string css = read_file("frontend/style.css");
-    if (css.empty()) {
-      response = http_response(404, "text/plain", "style.css not found");
-    } else {
-      response = http_response(200, "text/css", css);
-    }
-  } else if (request.find("GET /script.js") != std::string::npos) {
-    std::string js = read_file("frontend/script.js");
-    if (js.empty()) {
-      response = http_response(404, "text/plain", "script.js not found");
-    } else {
-      response = http_response(200, "application/javascript", js);
-    }
-  } else if (request.find("GET /") != std::string::npos) {
-    // Serve the frontend HTML file
-    std::string html = read_file("frontend/index.html");
-    if (html.empty()) {
-      response = http_response(404, "text/plain", "index.html not found");
-    } else {
-      response = http_response(200, "text/html", html);
-    }
-  } else {
+  }
+  else if (request.find("GET /style.css") != std::string::npos) {
+    process_request("frontend/style.css", "text/css");
+  }
+  else if (request.find("GET /script.js") != std::string::npos) {
+    process_request("frontend/script.js", "application/javascript");
+  }
+  else if (request.find("GET /") != std::string::npos) {
+    process_request("frontend/index.html", "text/html");
+  }
+  else {
     response = http_response(404, "text/plain", "Not found");
   }
 
