@@ -15,7 +15,7 @@ function formatUptime(secs) {
 
 // Format CPU time as m:ss.xx
 function formatCPUTime(csecs) {
-  const m = Math.floor((csecs % 360000) / 6000);
+  const m = Math.floor(csecs / 6000);
   const s = Math.floor((csecs % 6000) / 100);
   const hs = csecs % 100;
   return `${m}:${String(s).padStart(2, "0")}.${String(hs).padStart(2, "0")}`;
