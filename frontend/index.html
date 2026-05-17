@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mytop</title>
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <h1>mytop</h1>
+    <div id="status">connecting...</div>
+    <div id="uptime">uptime:</div>
+
+    <div class="cards">
+      <div class="card" id="card-cpu">
+        <div class="card-title">CPU</div>
+        <div class="card-value" id="cpu-pct">—</div>
+        <div class="bar-track"><div class="bar-fill" id="cpu-bar"></div></div>
+        <div class="card-detail" id="cpu-detail">—</div>
+      </div>
+
+      <div class="card" id="card-mem">
+        <div class="card-title">MEMORY</div>
+        <div class="card-value" id="mem-pct">—</div>
+        <div class="bar-track"><div class="bar-fill" id="mem-bar"></div></div>
+        <div class="card-detail" id="mem-detail">—</div>
+      </div>
+
+      <div class="card" id="card-swap">
+        <div class="card-title">SWAP</div>
+        <div class="card-value" id="swap-pct">—</div>
+        <div class="bar-track"><div class="bar-fill" id="swap-bar"></div></div>
+        <div class="card-detail" id="swap-detail">—</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-pid" data-col="pid">PID</th>
+            <th class="col-user" data-col="user">USER</th>
+            <th class="col-priority" data-col="priority">PRIORITY</th>
+            <th class="col-nice" data-col="nice">NICE</th>
+            <th class="col-virt" data-col="virt">VIRT</th>
+            <th class="col-res" data-col="res">RES</th>
+            <th class="col-state" data-col="state">STATE</th>
+            <th class="col-cpu" data-col="cpu">CPU%</th>
+            <th class="col-mem" data-col="mem">MEM%</th>
+            <th class="col-time" data-col="time">TIME+</th>
+            <th class="col-cmd" data-col="command">COMMAND</th>
+          </tr>
+        </thead>
+        <tbody id="proc-tbody"></tbody>
+      </table>
+    </div>
+  </body>
+</html>

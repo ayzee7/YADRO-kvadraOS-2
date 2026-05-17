@@ -1,0 +1,228 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --dim: #8b949e;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --blue: #58a6ff;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Consolas";
+  font-size: 13px;
+  padding: 1rem;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  font-size: 1.5rem;
+  color: var(--blue);
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+}
+
+#status {
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 1rem;
+}
+
+#uptime {
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 1rem;
+}
+
+/* Stat cards */
+
+.cards {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  min-width: 220px;
+  flex: 1;
+}
+
+.card-title {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 0.5rem;
+}
+
+.card-value {
+  font-size: 1.6rem;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.card-detail {
+  font-size: 11px;
+  color: var(--dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Progress bar */
+
+.bar-track {
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Process table */
+
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  flex: 1;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dim) var(--border);
+}
+
+.table-wrap::-webkit-scrollbar {
+  width: 8px;
+}
+.table-wrap::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: 0 0 6px 6px;
+}
+.table-wrap::-webkit-scrollbar-thumb {
+  background: var(--dim);
+  border-radius: 4px;
+}
+.table-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--text);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--panel);
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+thead th::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+thead th:hover {
+  color: var(--text);
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+tbody td {
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+  white-space: nowrap;
+}
+
+.col-pid {
+  color: var(--dim);
+  width: 55px;
+}
+.col-user {
+  color: var(--dim);
+  width: 90px;
+}
+.col-priority {
+  text-align: right;
+  width: 70px;
+  color: var(--dim);
+}
+.col-nice {
+  text-align: right;
+  width: 50px;
+  color: var(--dim);
+}
+.col-virt {
+  text-align: right;
+  width: 80px;
+  color: var(--dim);
+}
+.col-res {
+  text-align: right;
+  width: 80px;
+  color: var(--dim);
+}
+.col-state {
+  text-align: center;
+  width: 55px;
+}
+.col-cpu {
+  text-align: right;
+  width: 60px;
+}
+.col-mem {
+  text-align: right;
+  width: 60px;
+  color: var(--dim);
+}
+.col-time {
+  text-align: right;
+  width: 70px;
+  color: var(--dim);
+}
+.col-cmd {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
