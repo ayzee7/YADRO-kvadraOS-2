@@ -30,7 +30,7 @@ std::binary_semaphore g_main_to_thread{0};
 std::binary_semaphore g_thread_to_main{0};
 
 // Ticks used by a process in the previous collection cycle
-static std::unordered_map<int, long> g_prev_proc_ticks;
+std::unordered_map<int, long> g_prev_proc_ticks;
 
 std::vector<ProcessInfo> collect_processes(long mem_total_kb,
                                            long delta_total_ticks) {
@@ -89,6 +89,8 @@ std::vector<ProcessInfo> collect_processes(long mem_total_kb,
     result.push_back(p);
   }
 
+  // accessed only from collector_thread
+  // can use without mutex in this case
   g_prev_proc_ticks = std::move(curr_proc_ticks);
 
   return result;
@@ -133,6 +135,7 @@ std::string http_response(int status, const std::string &content_type,
 void handle_client(int client_fd) {
   try {
     // Read the request (we only need the first line)
+    // no real need to read in for loop on localhost
     std::array<char, 4096> req_buf;
     ssize_t n = recv(client_fd, req_buf.data(), req_buf.size() - 1, 0);
     if (n <= 0) {
@@ -169,7 +172,15 @@ void handle_client(int client_fd) {
       response = http_response(404, "text/plain", "Not found");
     }
 
-    send(client_fd, response.data(), response.size(), 0);
+    size_t sent = 0;
+    while (sent < response.size()) {
+      ssize_t n =
+          send(client_fd, response.data() + sent, response.size() - sent, 0);
+      if (n <= 0)
+        break;
+      sent += n;
+    }
+
     close(client_fd);
   } catch (const std::exception &e) {
     std::cerr << "handle_client error: " << e.what() << '\n';
@@ -202,6 +213,7 @@ int main() {
 
   // Start the data collection thread
   std::thread(collector_thread).detach();
+  // main never returns, so detached threads can be used for this scope
 
   // Give collector_thread a signal to start working
   g_main_to_thread.release();
