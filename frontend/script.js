@@ -82,11 +82,15 @@ function renderProcesses(processes) {
   const tbody = document.getElementById("proc-tbody");
   tbody.innerHTML = "";
 
+  const escHtml = s => {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   sorted.forEach((p) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
         <td class="col-pid">${p.pid}</td>
-        <td class="col-user">${p.user}</td>
+        <td class="col-user">${escHtml(p.user)}</td>
         <td class="col-priority">${p.priority}</td>
         <td class="col-nice">${p.nice}</td>
         <td class="col-virt">${p.virt}</td>
@@ -95,7 +99,7 @@ function renderProcesses(processes) {
         <td class="col-cpu" style="color:${pctColor(p.cpu)}">${p.cpu.toFixed(1)}%</td>
         <td class="col-mem" style="color:${pctColor(p.mem)}">${p.mem.toFixed(1)}%</td>
         <td class="col-time">${formatCPUTime(p.time)}</td>
-        <td class="col-cmd" title="${p.command}">${p.command}</td>
+        <td class="col-cmd">${escHtml(p.command)}</td>
         `;
     tbody.appendChild(tr);
   });

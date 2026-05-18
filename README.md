@@ -5,7 +5,7 @@
 ## Требования к сборке
 
 - Linux 3.18 (или WSL)
-- gcc / Clang (C++17 + `std::filesystem`)
+- gcc / Clang (C++20)
 - CMake 3.14
 
 ## Сборка
